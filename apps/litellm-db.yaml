@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: litellm-db
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jbcazaux/ai-lab.git
+    targetRevision: main
+    path: litellm/db
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: litellm
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
