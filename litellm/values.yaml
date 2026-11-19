@@ -24,6 +24,10 @@ proxy_config:
       litellm_params:
         model: deepseek/deepseek-v4-pro
         api_key: os.environ/DEEPSEEK_API_KEY
+    - model_name: nemotron-3-ultra
+      litellm_params:
+        model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+        api_key: os.environ/OPENROUTER_API_KEY
   general_settings:
     master_key: os.environ/PROXY_MASTER_KEY
     disable_env_credential_login: true
