@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  labels: {app.kubernetes.io/name: n8n}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # single ReadWriteOnce volume: never run two pods at once
+  selector:
+    matchLabels: {app.kubernetes.io/name: n8n}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: n8n}
+    spec:
+      # Otherwise Kubernetes injects N8N_PORT=tcp://<ip>:5678 (from the "n8n" Service),
+      # which collides with n8n's own N8N_PORT setting and breaks startup
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # the image's "node" user
+        fsGroup: 1000   # makes the volume writable by that user
+      containers:
+        - name: n8n
+          image: docker.n8n.io/n8nio/n8n:2.48.7
+          envFrom:
+            # N8N_ENCRYPTION_KEY (encrypts the credentials stored in the database)
+            - secretRef: {name: n8n-env}
+          env:
+            - {name: DB_TYPE, value: postgresdb}
+            - {name: DB_POSTGRESDB_HOST, value: n8n-db-rw} # CNPG read-write Service
+            - {name: DB_POSTGRESDB_PORT, value: "5432"}
+            - {name: DB_POSTGRESDB_DATABASE, value: n8n}
+            - name: DB_POSTGRESDB_USER
+              valueFrom: {secretKeyRef: {name: n8n-db-app, key: username}}
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom: {secretKeyRef: {name: n8n-db-app, key: password}}
+            # GENERIC_TIMEZONE: used by Schedule/Cron nodes. TZ: system clock (logs, Date in Code nodes)
+            - {name: GENERIC_TIMEZONE, value: Europe/Paris}
+            - {name: TZ, value: Europe/Paris}
+            # Reached over plain http through kubectl port-forward (no ingress/TLS yet)
+            - {name: N8N_SECURE_COOKIE, value: "false"}
+          ports:
+            - {name: http, containerPort: 5678}
+          readinessProbe:
+            httpGet: {path: /healthz/readiness, port: http} # also checks the DB connection
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 60 # leave time for DB migrations on first start/upgrades
+            periodSeconds: 20
+            failureThreshold: 5
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: "1", memory: 2Gi}
+          volumeMounts:
+            - {name: data, mountPath: /home/node/.n8n}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: n8n-data}

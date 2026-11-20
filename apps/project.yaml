@@ -17,6 +17,7 @@ spec:
     - {server: https://kubernetes.default.svc, namespace: cnpg-system}
     - {server: https://kubernetes.default.svc, namespace: litellm}
     - {server: https://kubernetes.default.svc, namespace: hermes}
+    - {server: https://kubernetes.default.svc, namespace: n8n}
   # Cluster-scoped kinds: Namespace for CreateNamespace=true, the rest for the CNPG operator
   clusterResourceWhitelist:
     - {group: "", kind: Namespace}
