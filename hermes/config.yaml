@@ -1,0 +1,9 @@
+# Hermes config.yaml. Git is the source of truth: copied into the data volume at every pod start.
+model:
+  provider: custom
+  base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+  api_key: ${LITELLM_API_KEY}
+  # Must match a model_name in litellm/values.yaml (proxy_config.model_list)
+  default: nemotron-3-ultra
+terminal:
+  backend: local
