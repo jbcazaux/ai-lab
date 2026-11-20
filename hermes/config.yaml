@@ -1,9 +1,25 @@
 # Hermes config.yaml. Git is the source of truth: copied into the data volume at every pod start.
+# Only non-default settings are listed. Secrets come from env vars (${VAR}), see deployment.yaml.
 model:
   provider: custom
   base_url: http://litellm.litellm.svc.cluster.local:4000/v1
   api_key: ${LITELLM_API_KEY}
   # Must match a model_name in litellm/values.yaml (proxy_config.model_list)
   default: nemotron-3-ultra
+agent:
+  max_turns: 150
+  reasoning_effort: medium
 terminal:
   backend: local
+  lifetime_seconds: 300
+code_execution:
+  timeout: 300
+  max_tool_calls: 50
+display:
+  streaming: true
+  cleanup_progress: false
+skills:
+  creation_nudge_interval: 15
+# One conversation per user in group chats
+group_sessions_per_user: true
+# Gateways (Telegram, WhatsApp) are enabled through env vars: see deployment.yaml and the hermes-env Secret

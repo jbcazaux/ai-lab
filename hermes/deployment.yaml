@@ -28,11 +28,17 @@ spec:
           image: nousresearch/hermes-agent:v0.23.3
           args: [gateway, run]
           envFrom:
-            - secretRef: {name: hermes-env} # LITELLM_API_KEY, API_SERVER_KEY
+            # LITELLM_API_KEY, API_SERVER_KEY, HERMES_DASHBOARD_BASIC_AUTH_*,
+            # TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS, TELEGRAM_HOME_CHANNEL,
+            # WHATSAPP_ALLOWED_USERS, WHATSAPP_HOME_CHANNEL
+            - secretRef: {name: hermes-env}
           env:
             - {name: API_SERVER_ENABLED, value: "true"}
             - {name: API_SERVER_HOST, value: 0.0.0.0}
             - {name: API_SERVER_PORT, value: "8642"}
+            # Telegram is enabled by TELEGRAM_BOT_TOKEN (long polling: no ingress needed)
+            - {name: WHATSAPP_ENABLED, value: "true"}
+            - {name: WHATSAPP_MODE, value: self-chat} # talk to the agent by messaging yourself
           ports:
             - {name: api, containerPort: 8642}
           readinessProbe:
