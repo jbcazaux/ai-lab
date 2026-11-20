@@ -3,8 +3,11 @@ kind: Application
 metadata:
   name: cnpg
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  finalizers: [resources-finalizer.argocd.argoproj.io]
 spec:
-  project: default
+  project: ai-lab
   source:
     repoURL: https://cloudnative-pg.github.io/charts
     chart: cloudnative-pg
@@ -15,3 +18,4 @@ spec:
   syncPolicy:
     automated: {prune: true, selfHeal: true}
     syncOptions: [CreateNamespace=true, ServerSideApply=true]
+    retry: {limit: 5, backoff: {duration: 10s, factor: 2, maxDuration: 3m}}
